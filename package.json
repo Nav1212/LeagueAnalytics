@@ -1,0 +1,16 @@
+{
+  "name": "championgg-revitalization",
+  "private": true,
+  "version": "0.1.0",
+  "description": "champion.gg-style League stats: Python data processor -> SQLite -> TypeScript server + React frontend",
+  "workspaces": [
+    "webapp/server",
+    "webapp/client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace webapp/server",
+    "dev:client": "npm run dev --workspace webapp/client",
+    "build": "npm run build --workspace webapp/client && npm run typecheck --workspace webapp/server",
+    "start": "npm run start --workspace webapp/server"
+  }
+}
