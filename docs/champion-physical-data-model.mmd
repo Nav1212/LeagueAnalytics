@@ -1,0 +1,160 @@
+%% Private SQLite only; API serving objects are in gold-physical-data-model.mmd.
+%% Champion.GG Revitalization - current physical SQLite data model
+%%
+%% Lucidchart usage:
+%%   1. Open a Lucidchart document.
+%%   2. Open "Diagram as code" from the left toolbar.
+%%   3. Select Mermaid, paste this entire file, and insert the diagram.
+%%
+%% Important: FK labels and relationship lines below document the relationships
+%% used by the application. The current SQLite CREATE TABLE statements do not
+%% declare or enforce FOREIGN KEY constraints.
+
+erDiagram
+    bronze_fetch_runs {
+        INTEGER run_id PK "Ingestion run identity"
+        TEXT pipeline "Pipeline name"
+        TEXT parameters "JSON invocation parameters"
+        TEXT started_at "ISO-8601 UTC"
+        TEXT completed_at "ISO-8601 UTC; nullable"
+        TEXT status "running complete partial failed"
+        TEXT error "Fatal run error; nullable"
+    }
+
+    bronze_payloads {
+        INTEGER payload_id PK "Payload version identity"
+        INTEGER fetch_run_id FK "Originating ingestion run"
+        TEXT source "riot-api ddragon riot-static"
+        TEXT dataset "Stable source dataset name"
+        TEXT routing_value "Platform region or version"
+        TEXT natural_key "Source resource identity"
+        TEXT request_url "Credential-free source URL"
+        TEXT request_params "JSON query parameters"
+        TEXT response_json "Exact response body"
+        TEXT content_sha256 "Payload deduplication hash"
+        TEXT fetched_at "ISO-8601 UTC"
+    }
+
+    bronze_fetch_errors {
+        INTEGER error_id PK "Request error identity"
+        INTEGER fetch_run_id FK "Originating ingestion run"
+        TEXT dataset "Failed source dataset"
+        TEXT natural_key "Failed resource identity"
+        TEXT error "Error description"
+        TEXT occurred_at "ISO-8601 UTC"
+    }
+
+    bronze_matches {
+        TEXT match_id PK "Riot match ID"
+        TEXT json "Exact Match-V5 JSON"
+        TEXT source "riot or demo"
+        TEXT fetched_at "ISO-8601 UTC"
+    }
+
+    bronze_match_timelines {
+        TEXT match_id PK, FK "Riot match ID"
+        TEXT json "Exact Match-V5 timeline JSON"
+        TEXT source "riot or demo"
+        TEXT fetched_at "ISO-8601 UTC"
+    }
+
+    raw_matches {
+        TEXT match_id PK "Riot match ID"
+        TEXT json "Exact Match-V5 JSON"
+        TEXT source "riot or demo; default riot"
+        TEXT fetched_at "ISO-8601 UTC"
+    }
+
+    champions {
+        INTEGER champion_id PK "Riot numeric champion ID"
+        TEXT key "Data Dragon ID"
+        TEXT name "Display name"
+        TEXT title "Champion title"
+        TEXT tags "JSON array of champion classes"
+    }
+
+    patch_totals {
+        TEXT patch PK "Major.minor patch"
+        INTEGER matches "Eligible ranked matches"
+    }
+
+    champion_stats {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        TEXT role PK "TOP JUNGLE MIDDLE BOTTOM UTILITY"
+        INTEGER games "Games played"
+        INTEGER wins "Games won"
+        INTEGER kills "Total kills"
+        INTEGER deaths "Total deaths"
+        INTEGER assists "Total assists"
+        INTEGER gold "Total gold earned"
+        INTEGER damage "Total champion damage"
+        INTEGER cs "Total lane and neutral CS"
+    }
+
+    champion_bans {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        INTEGER bans "Total bans"
+    }
+
+    matchups {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        TEXT role PK "Position played"
+        INTEGER opponent_id PK, FK "Opposing champion in same role"
+        INTEGER games "Games in matchup"
+        INTEGER wins "Champion wins in matchup"
+    }
+
+    builds {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        TEXT role PK "Position played"
+        TEXT items PK "JSON array of first 3 core item IDs"
+        INTEGER games "Games using build"
+        INTEGER wins "Wins using build"
+    }
+
+    spell_sets {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        TEXT role PK "Position played"
+        TEXT spells PK "JSON array of 2 spell IDs"
+        INTEGER games "Games using spell set"
+        INTEGER wins "Wins using spell set"
+    }
+
+    rune_sets {
+        TEXT patch PK, FK "Major.minor patch"
+        INTEGER champion_id PK, FK "Riot champion ID"
+        TEXT role PK "Position played"
+        INTEGER keystone PK "Primary keystone perk ID"
+        INTEGER sub_style PK "Secondary rune style ID"
+        INTEGER games "Games using rune set"
+        INTEGER wins "Wins using rune set"
+    }
+
+    meta {
+        TEXT key PK "Metadata name"
+        TEXT value "Metadata value"
+    }
+
+    bronze_fetch_runs ||--o{ bronze_payloads : "lands"
+    bronze_fetch_runs ||--o{ bronze_fetch_errors : "records"
+    bronze_matches ||--o| bronze_match_timelines : "may have timeline"
+
+    patch_totals ||--o{ champion_stats : "contains"
+    patch_totals ||--o{ champion_bans : "contains"
+    patch_totals ||--o{ matchups : "contains"
+    patch_totals ||--o{ builds : "contains"
+    patch_totals ||--o{ spell_sets : "contains"
+    patch_totals ||--o{ rune_sets : "contains"
+
+    champions ||--o{ champion_stats : "has role statistics"
+    champions ||--o{ champion_bans : "is banned"
+    champions ||--o{ matchups : "plays matchup"
+    champions ||--o{ matchups : "is matchup opponent"
+    champions ||--o{ builds : "uses build"
+    champions ||--o{ spell_sets : "uses spells"
+    champions ||--o{ rune_sets : "uses runes"

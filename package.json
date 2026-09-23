@@ -2,7 +2,7 @@
   "name": "championgg-revitalization",
   "private": true,
   "version": "0.1.0",
-  "description": "champion.gg-style League stats: Python data processor -> SQLite -> TypeScript server + React frontend",
+  "description": "League stats: Python publishes Gold SQLite snapshots for a read-only TypeScript API and React frontend",
   "workspaces": [
     "webapp/server",
     "webapp/client"
@@ -10,7 +10,9 @@
   "scripts": {
     "dev:server": "npm run dev --workspace webapp/server",
     "dev:client": "npm run dev --workspace webapp/client",
-    "build": "npm run build --workspace webapp/client && npm run typecheck --workspace webapp/server",
+    "build": "npm run typecheck --workspace webapp/client && npm run build --workspace webapp/client && npm run typecheck --workspace webapp/server",
+    "test:server": "npm run test --workspace webapp/server",
+    "test:client": "npm run test --workspace webapp/client",
     "start": "npm run start --workspace webapp/server"
   }
 }

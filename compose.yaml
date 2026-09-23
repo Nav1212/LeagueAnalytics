@@ -1,0 +1,44 @@
+services:
+  processor:
+    build:
+      context: .
+      dockerfile: processor/Dockerfile
+    profiles: [tools]
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      CHAMPIONGG_DB: /data/private/champions.db
+      CHAMPIONGG_GOLD_DIR: /data/gold
+      RIOT_API_KEY: ${RIOT_API_KEY:-}
+    volumes:
+      - private-data:/data/private
+      - gold-data:/data/gold
+    tmpfs:
+      - /tmp
+  api:
+    build:
+      context: .
+      dockerfile: webapp/Dockerfile
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      CHAMPIONGG_GOLD_DIR: /data/gold
+      PORT: "8000"
+    volumes:
+      - gold-data:/data/gold:ro
+    tmpfs:
+      - /tmp
+    ports:
+      - "127.0.0.1:${CHAMPIONGG_PORT:-8000}:8000"
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8000/api/meta').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+volumes:
+  private-data:
+  gold-data:

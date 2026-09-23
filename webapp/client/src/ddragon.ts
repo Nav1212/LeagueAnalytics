@@ -1,10 +1,11 @@
+import type { RuneStyle } from "./api";
 /** Data Dragon asset URLs + static id maps (spells, runes, roles). */
 
 const CDN = "https://ddragon.leagueoflegends.com/cdn";
 let version = "16.17.1"; // updated from /api/meta at startup
 
 export function setDdragonVersion(v: string | null) {
-  if (v) version = v;
+  version = v ?? "16.17.1";
 }
 
 export const champIcon = (key: string) => `${CDN}/${version}/img/champion/${key}.png`;
@@ -69,29 +70,26 @@ export const STYLE_NAMES: Record<number, string> = {
   8400: "Resolve",
 };
 
-// perk id -> icon path, filled from runesReforged.json when the CDN is reachable
+// Populated from Python's published Gold catalog, never from external JSON.
 const runeIcons: Record<number, string> = {};
+const fallbackKeystoneNames = { ...KEYSTONE_NAMES };
+const fallbackStyleNames = { ...STYLE_NAMES };
 
-export async function loadRuneIcons(): Promise<void> {
-  try {
-    const res = await fetch(`${CDN}/${version}/data/en_US/runesReforged.json`);
-    if (!res.ok) return;
-    const styles = (await res.json()) as {
-      id: number;
-      icon: string;
-      slots: { runes: { id: number; icon: string; name: string }[] }[];
-    }[];
-    for (const style of styles) {
-      runeIcons[style.id] = `${CDN}/img/${style.icon}`;
-      for (const slot of style.slots) {
-        for (const rune of slot.runes) {
-          runeIcons[rune.id] = `${CDN}/img/${rune.icon}`;
-          if (!KEYSTONE_NAMES[rune.id]) KEYSTONE_NAMES[rune.id] = rune.name;
-        }
+export function applyRuneStyles(styles: RuneStyle[]): void {
+  for (const key of Object.keys(runeIcons)) delete runeIcons[Number(key)];
+  for (const key of Object.keys(KEYSTONE_NAMES)) delete KEYSTONE_NAMES[Number(key)];
+  for (const key of Object.keys(STYLE_NAMES)) delete STYLE_NAMES[Number(key)];
+  Object.assign(KEYSTONE_NAMES, fallbackKeystoneNames);
+  Object.assign(STYLE_NAMES, fallbackStyleNames);
+  for (const style of styles) {
+    if (style.icon) runeIcons[style.id] = `${CDN}/img/${style.icon}`;
+    STYLE_NAMES[style.id] = style.name;
+    for (const slot of style.slots) {
+      for (const rune of slot.runes) {
+        if (rune.icon) runeIcons[rune.id] = `${CDN}/img/${rune.icon}`;
+        KEYSTONE_NAMES[rune.id] = rune.name;
       }
     }
-  } catch {
-    /* offline: names still render */
   }
 }
 

@@ -187,7 +187,7 @@ a:hover { color: var(--teal); }
 
 .champ-table thead th {
   position: sticky;
-  top: 58px;
+  top: 0; /* The scrolling container is .table-wrap, not the page header. */
   background: var(--panel-2);
   color: var(--text-dim);
   font-size: 11px;

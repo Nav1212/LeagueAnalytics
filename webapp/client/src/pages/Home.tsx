@@ -22,7 +22,7 @@ const SORTERS: Record<SortKey, (a: ChampionRow, b: ChampionRow) => number> = {
 };
 
 export default function Home() {
-  const { meta, patch } = useApp();
+  const { meta, patch, source } = useApp();
   const [rows, setRows] = useState<ChampionRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<string>("ALL");
@@ -31,13 +31,15 @@ export default function Home() {
   const [asc, setAsc] = useState(false);
 
   useEffect(() => {
-    if (!patch) return;
+    if (!patch || !source) { setRows([]); setError(null); return; }
+    const controller = new AbortController();
     setRows(null);
     setError(null);
-    fetchChampions(patch)
-      .then((d) => setRows(d.rows))
-      .catch((e: Error) => setError(e.message));
-  }, [patch]);
+    fetchChampions(patch, source, controller.signal)
+      .then((d) => { if (!controller.signal.aborted) setRows(d.rows); })
+      .catch((e: Error) => { if (!controller.signal.aborted) setError(e.message); });
+    return () => controller.abort();
+  }, [patch, source]);
 
   const patchMatches = meta.patches.find((p) => p.patch === patch)?.matches ?? 0;
 
@@ -70,6 +72,7 @@ export default function Home() {
   const arrow = (key: SortKey) =>
     sortKey === key ? <span className="sort-arrow">{asc ? "▲" : "▼"}</span> : null;
 
+  if (!patch || !source) return <ErrorBox><h2>No matches available</h2><p>Publish match data with the Python processor to see statistics.</p></ErrorBox>;
   if (error) return <ErrorBox><h2>Failed to load champions</h2><p>{error}</p></ErrorBox>;
 
   return (

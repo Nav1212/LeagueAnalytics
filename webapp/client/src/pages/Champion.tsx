@@ -68,20 +68,22 @@ function MatchupList({ title, items, tone }: {
 
 export default function Champion() {
   const { champKey } = useParams();
-  const { patch } = useApp();
+  const { patch, source } = useApp();
   const [detail, setDetail] = useState<ChampionDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [roleIdx, setRoleIdx] = useState(0);
 
   useEffect(() => {
-    if (!champKey || !patch) return;
+    if (!champKey) return;
+    const controller = new AbortController();
     setDetail(null);
     setError(null);
     setRoleIdx(0);
-    fetchChampionDetail(champKey, patch)
-      .then(setDetail)
-      .catch((e: Error) => setError(e.message));
-  }, [champKey, patch]);
+    fetchChampionDetail(champKey, patch, source, controller.signal)
+      .then((value) => { if (!controller.signal.aborted) setDetail(value); })
+      .catch((e: Error) => { if (!controller.signal.aborted) setError(e.message); });
+    return () => controller.abort();
+  }, [champKey, patch, source]);
 
   const role = detail?.roles[roleIdx];
 

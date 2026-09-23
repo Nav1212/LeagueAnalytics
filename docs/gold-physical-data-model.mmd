@@ -1,0 +1,96 @@
+%% Implemented public Gold-only SQLite snapshot; edges are logical joins.
+erDiagram
+    gold_patch_totals {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER matches
+    }
+    gold_champion_stats {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        TEXT role PK
+        INTEGER games
+        INTEGER wins
+        INTEGER kills
+        INTEGER deaths
+        INTEGER assists
+        INTEGER gold
+        INTEGER damage
+        INTEGER cs
+    }
+    gold_champion_bans {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        INTEGER bans
+    }
+    gold_matchups {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        TEXT role PK
+        INTEGER opponent_id PK
+        INTEGER games
+        INTEGER wins
+    }
+    gold_builds {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        TEXT role PK
+        TEXT items PK
+        INTEGER games
+        INTEGER wins
+    }
+    gold_spell_sets {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        TEXT role PK
+        TEXT spells PK
+        INTEGER games
+        INTEGER wins
+    }
+    gold_rune_sets {
+        TEXT source PK
+        TEXT patch PK
+        INTEGER champion_id PK
+        TEXT role PK
+        INTEGER keystone PK
+        INTEGER sub_style PK
+        INTEGER games
+        INTEGER wins
+    }
+    gold_champions {
+        INTEGER champion_id PK
+        TEXT key
+        TEXT name
+        TEXT title
+        TEXT tags
+    }
+    gold_source_counts {
+        TEXT source PK
+        INTEGER raw_matches
+    }
+    gold_rune_catalog {
+        TEXT version PK
+        TEXT locale PK
+        TEXT styles
+    }
+    gold_meta {
+        TEXT key PK
+        TEXT value
+    }
+    gold_champions ||--o{ gold_champion_stats : "champion_id"
+    gold_patch_totals ||--o{ gold_champion_stats : "source and patch"
+    gold_champions ||--o{ gold_champion_bans : "champion_id"
+    gold_patch_totals ||--o{ gold_champion_bans : "source and patch"
+    gold_champions ||--o{ gold_matchups : "champion_id"
+    gold_patch_totals ||--o{ gold_matchups : "source and patch"
+    gold_champions ||--o{ gold_builds : "champion_id"
+    gold_patch_totals ||--o{ gold_builds : "source and patch"
+    gold_champions ||--o{ gold_spell_sets : "champion_id"
+    gold_patch_totals ||--o{ gold_spell_sets : "source and patch"
+    gold_champions ||--o{ gold_rune_sets : "champion_id"
+    gold_patch_totals ||--o{ gold_rune_sets : "source and patch"

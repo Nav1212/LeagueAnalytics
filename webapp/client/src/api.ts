@@ -1,4 +1,5 @@
 /** Typed client for the server's JSON API. */
+export type Source = "riot" | "demo";
 
 export interface PatchInfo {
   patch: string;
@@ -6,6 +7,10 @@ export interface PatchInfo {
 }
 
 export interface Meta {
+  source: Source | null;
+  sources: Source[];
+  runId: string;
+  schemaVersion: number;
   patches: PatchInfo[];
   latestPatch: string | null;
   totalMatches: number;
@@ -81,6 +86,7 @@ export interface RoleDetail {
 }
 
 export interface ChampionDetail {
+  source: Source | null;
   id: number;
   key: string;
   name: string;
@@ -91,8 +97,8 @@ export interface ChampionDetail {
   roles: RoleDetail[];
 }
 
-async function get<T>(url: string): Promise<T> {
-  const res = await fetch(url);
+async function get<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(url, { signal });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? `${res.status} ${res.statusText}`);
@@ -100,14 +106,26 @@ async function get<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export const fetchMeta = () => get<Meta>("/api/meta");
+export interface RuneStyle {
+  id: number;
+  name: string;
+  icon: string | null;
+  slots: { runes: { id: number; icon: string | null; name: string }[] }[];
+}
+export interface RuneCatalog { version: string | null; styles: RuneStyle[] }
 
-export const fetchChampions = (patch: string) =>
-  get<{ patch: string; rows: ChampionRow[] }>(
-    `/api/champions?patch=${encodeURIComponent(patch)}`,
+export const fetchMeta = (source?: Source, signal?: AbortSignal) =>
+  get<Meta>(`/api/meta${source ? `?source=${source}` : ""}`, signal);
+
+export const fetchChampions = (patch: string, source: Source, signal?: AbortSignal) =>
+  get<{ source: Source; patch: string; rows: ChampionRow[] }>(
+    `/api/champions?patch=${encodeURIComponent(patch)}&source=${source}`, signal,
   );
 
-export const fetchChampionDetail = (key: string, patch: string) =>
+export const fetchChampionDetail = (key: string, patch: string, source: Source | null, signal?: AbortSignal) =>
   get<ChampionDetail>(
-    `/api/champion/${encodeURIComponent(key)}?patch=${encodeURIComponent(patch)}`,
+    `/api/champion/${encodeURIComponent(key)}?patch=${encodeURIComponent(patch)}${source ? `&source=${source}` : ""}`, signal,
   );
+
+export const fetchRunes = (version: string | null, signal?: AbortSignal) =>
+  get<RuneCatalog>(`/api/static/runes${version ? `?version=${encodeURIComponent(version)}` : ""}`, signal);

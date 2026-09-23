@@ -1,1 +1,1 @@
-"""Champion.GG-Revitalization data processor: Riot API -> raw SQLite -> aggregates."""
+"""Riot JSON -> private Bronze/Silver -> public Gold-only SQLite snapshots."""

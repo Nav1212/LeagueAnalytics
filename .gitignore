@@ -4,3 +4,7 @@ data/
 __pycache__/
 *.pyc
 .env
+.venv/
+.cache/
+test-results/
+playwright-report/

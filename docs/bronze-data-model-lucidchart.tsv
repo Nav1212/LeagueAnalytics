@@ -1,0 +1,33 @@
+dbms	TABLE_CATALOG	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME	ORDINAL_POSITION	DATA_TYPE	CHARACTER_MAXIMUM_LENGTH	CONSTRAINT_TYPE	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME
+sqlserver	bronze	dbo	bronze_fetch_runs	run_id	1	bigint		PRIMARY KEY			
+sqlserver	bronze	dbo	bronze_fetch_runs	pipeline	2	text					
+sqlserver	bronze	dbo	bronze_fetch_runs	parameters	3	text					
+sqlserver	bronze	dbo	bronze_fetch_runs	started_at	4	text					
+sqlserver	bronze	dbo	bronze_fetch_runs	completed_at	5	text					
+sqlserver	bronze	dbo	bronze_fetch_runs	status	6	text					
+sqlserver	bronze	dbo	bronze_fetch_runs	error	7	text					
+sqlserver	bronze	dbo	bronze_payloads	payload_id	1	bigint		PRIMARY KEY			
+sqlserver	bronze	dbo	bronze_payloads	fetch_run_id	2	bigint		FOREIGN KEY	dbo	bronze_fetch_runs	run_id
+sqlserver	bronze	dbo	bronze_payloads	source	3	text		UNIQUE			
+sqlserver	bronze	dbo	bronze_payloads	dataset	4	text		UNIQUE			
+sqlserver	bronze	dbo	bronze_payloads	routing_value	5	text		UNIQUE			
+sqlserver	bronze	dbo	bronze_payloads	natural_key	6	text		UNIQUE			
+sqlserver	bronze	dbo	bronze_payloads	request_url	7	text					
+sqlserver	bronze	dbo	bronze_payloads	request_params	8	text					
+sqlserver	bronze	dbo	bronze_payloads	response_json	9	text					
+sqlserver	bronze	dbo	bronze_payloads	content_sha256	10	text		UNIQUE			
+sqlserver	bronze	dbo	bronze_payloads	fetched_at	11	text					
+sqlserver	bronze	dbo	bronze_fetch_errors	error_id	1	bigint		PRIMARY KEY			
+sqlserver	bronze	dbo	bronze_fetch_errors	fetch_run_id	2	bigint		FOREIGN KEY	dbo	bronze_fetch_runs	run_id
+sqlserver	bronze	dbo	bronze_fetch_errors	dataset	3	text					
+sqlserver	bronze	dbo	bronze_fetch_errors	natural_key	4	text					
+sqlserver	bronze	dbo	bronze_fetch_errors	error	5	text					
+sqlserver	bronze	dbo	bronze_fetch_errors	occurred_at	6	text					
+sqlserver	bronze	dbo	bronze_matches	match_id	1	text		PRIMARY KEY			
+sqlserver	bronze	dbo	bronze_matches	json	2	text					
+sqlserver	bronze	dbo	bronze_matches	source	3	text					
+sqlserver	bronze	dbo	bronze_matches	fetched_at	4	text					
+sqlserver	bronze	dbo	bronze_match_timelines	match_id	1	text		PRIMARY KEY			
+sqlserver	bronze	dbo	bronze_match_timelines	json	2	text					
+sqlserver	bronze	dbo	bronze_match_timelines	source	3	text					
+sqlserver	bronze	dbo	bronze_match_timelines	fetched_at	4	text					

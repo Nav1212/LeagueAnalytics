@@ -13,8 +13,22 @@ import sqlite3
 
 import requests
 
+from . import db
+
 VERSIONS_URL = "https://ddragon.leagueoflegends.com/api/versions.json"
 CHAMPIONS_URL = "https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
+LANGUAGES_URL = "https://ddragon.leagueoflegends.com/cdn/languages.json"
+REALM_URL = "https://ddragon.leagueoflegends.com/realms/{realm}.json"
+RIOT_STATIC_BASE = "https://static.developer.riotgames.com/docs/lol"
+PLATFORM_REALMS = {
+    "br1": "br", "eun1": "eune", "euw1": "euw", "jp1": "jp", "kr": "kr",
+    "la1": "lan", "la2": "las", "na1": "na", "oc1": "oce", "ru": "ru", "tr1": "tr",
+    "ph2": "ph", "sg2": "sg", "th2": "th", "tw2": "tw", "vn2": "vn",
+}
+
+
+def realm_for_platform(platform: str) -> str:
+    return PLATFORM_REALMS.get(platform.lower(), platform.lower())
 
 # Fallback snapshot: (numeric id, ddragon key, display name, tags)
 # Used only when Data Dragon is unreachable.
@@ -105,37 +119,62 @@ FALLBACK_CHAMPIONS = [
 ]
 
 
-def fetch_champion_list() -> tuple[str, list[tuple[int, str, str, str, list[str]]]]:
-    """Return (ddragon_version, [(id, key, name, title, tags), ...]) from the CDN."""
-    versions = requests.get(VERSIONS_URL, timeout=15).json()
-    version = versions[0]
-    data = requests.get(CHAMPIONS_URL.format(version=version), timeout=30).json()
-    rows = []
-    for key, champ in data["data"].items():
-        rows.append((int(champ["key"]), key, champ["name"], champ.get("title", ""), champ.get("tags", [])))
-    return version, rows
+class StaticLoader:
+    """One download path for demo/static ingestion, with exact Bronze recording."""
+    def __init__(self, conn: sqlite3.Connection, fetch_run_id: int | None = None):
+        self.conn = conn
+        self.fetch_run_id = fetch_run_id
+        self.stored = 0
+        self.errors = 0
+
+    def fetch(self, source: str, dataset: str, natural_key: str, url: str,
+              routing: str = "") -> tuple[str, object] | None:
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            raw = response.text
+            if db.store_bronze_payload(
+                self.conn, source=source, dataset=dataset, natural_key=natural_key,
+                routing_value=routing, request_url=url, response_json=raw,
+                fetched_at=db.utcnow(), fetch_run_id=self.fetch_run_id,
+            ):
+                self.stored += 1
+            return raw, response.json()
+        except Exception as exc:
+            self.errors += 1
+            if self.fetch_run_id is not None:
+                db.record_fetch_error(self.conn, self.fetch_run_id, dataset, exc, natural_key)
+            print(f"  {dataset} unavailable ({exc})")
+            return None
 
 
 def sync_champions(conn: sqlite3.Connection) -> int:
-    """Populate the `champions` table, preferring live Data Dragon data."""
+    """Seed UI static data through the same recorded loader as full ingestion."""
+    run_id = db.start_fetch_run(conn, "demo-static", {"locale": "en_US"})
+    loader = StaticLoader(conn, run_id)
     try:
-        version, rows = fetch_champion_list()
-        source = f"ddragon {version}"
-        conn.execute(
-            "INSERT OR REPLACE INTO meta (key, value) VALUES ('ddragon_version', ?)", (version,)
-        )
-    except Exception as exc:  # offline fallback
-        print(f"  ddragon unavailable ({exc}); using bundled fallback champion list")
-        rows = [(cid, key, name, "", tags) for cid, key, name, tags in FALLBACK_CHAMPIONS]
-        source = "bundled fallback"
-
-    conn.executemany(
-        "INSERT OR REPLACE INTO champions (champion_id, key, name, title, tags) VALUES (?, ?, ?, ?, ?)",
-        [(cid, key, name, title, json.dumps(tags)) for cid, key, name, title, tags in rows],
-    )
-    conn.commit()
-    print(f"  champions table: {len(rows)} champions ({source})")
-    return len(rows)
+        versions = loader.fetch("ddragon", "ddragon.versions", "all", VERSIONS_URL)
+        champions = None
+        if versions and versions[1]:
+            version = str(versions[1][0])
+            champions = loader.fetch("ddragon", "ddragon.champion-summary", f"{version}:en_US",
+                                     CHAMPIONS_URL.format(version=version), version)
+            loader.fetch("ddragon", "ddragon.runes", f"{version}:en_US",
+                         f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/runesReforged.json", version)
+            if champions:
+                conn.execute("INSERT OR REPLACE INTO meta VALUES ('ddragon_version', ?)", (version,))
+        if champions:
+            rows = [(int(c["key"]), key, c["name"], c.get("title", ""), json.dumps(c.get("tags", [])))
+                    for key, c in champions[1]["data"].items()]
+            conn.executemany("INSERT OR REPLACE INTO champions VALUES (?, ?, ?, ?, ?)", rows)
+        elif not conn.execute("SELECT 1 FROM champions LIMIT 1").fetchone():
+            conn.executemany("INSERT INTO champions VALUES (?, ?, ?, ?, ?)",
+                             [(cid, key, name, "", json.dumps(tags)) for cid, key, name, tags in FALLBACK_CHAMPIONS])
+        db.finish_fetch_run(conn, run_id, status="partial" if loader.errors else "complete")
+        return conn.execute("SELECT count(*) FROM champions").fetchone()[0]
+    except Exception as exc:
+        db.finish_fetch_run(conn, run_id, status="failed", error=str(exc))
+        raise
 
 
 def load_champions(conn: sqlite3.Connection) -> dict[int, dict]:
@@ -153,3 +192,89 @@ def load_champions(conn: sqlite3.Connection) -> dict[int, dict]:
         }
         for r in rows
     }
+
+
+def sync_all_static(
+    conn: sqlite3.Connection,
+    *,
+    fetch_run_id: int | None = None,
+    locale: str = "en_US",
+    realm: str = "na",
+    champion_details: bool = True,
+) -> dict[str, int | str]:
+    """Land Riot's LoL static datasets byte-for-byte and refresh identities."""
+    loader = StaticLoader(conn, fetch_run_id)
+    fetch_and_land = loader.fetch
+
+    versions_result = fetch_and_land(
+        "ddragon", "ddragon.versions", "all", VERSIONS_URL
+    )
+    if versions_result is None:
+        return {"version": "unknown", "stored": loader.stored, "errors": loader.errors}
+    versions = versions_result[1]
+    version = str(versions[0])
+
+    fetch_and_land("ddragon", "ddragon.languages", "all", LANGUAGES_URL)
+    fetch_and_land(
+        "ddragon", "ddragon.realm", realm, REALM_URL.format(realm=realm), realm
+    )
+
+    data_urls = {
+        "ddragon.champion-summary": "champion.json",
+        "ddragon.items": "item.json",
+        "ddragon.summoner-spells": "summoner.json",
+        "ddragon.runes": "runesReforged.json",
+        "ddragon.profile-icons": "profileicon.json",
+        "ddragon.maps": "map.json",
+    }
+    results: dict[str, tuple[str, object] | None] = {}
+    for dataset, filename in data_urls.items():
+        url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/{locale}/{filename}"
+        results[dataset] = fetch_and_land(
+            "ddragon", dataset, f"{version}:{locale}", url, version
+        )
+
+    champion_result = results["ddragon.champion-summary"]
+    if champion_result is not None:
+        champion_data = champion_result[1]["data"]
+        rows = [
+            (
+                int(champ["key"]), key, champ["name"], champ.get("title", ""),
+                json.dumps(champ.get("tags", [])),
+            )
+            for key, champ in champion_data.items()
+        ]
+        conn.executemany(
+            """INSERT OR REPLACE INTO champions
+               (champion_id, key, name, title, tags) VALUES (?, ?, ?, ?, ?)""",
+            rows,
+        )
+        if champion_details:
+            for key in champion_data:
+                url = (
+                    f"https://ddragon.leagueoflegends.com/cdn/{version}/data/"
+                    f"{locale}/champion/{key}.json"
+                )
+                fetch_and_land(
+                    "ddragon", "ddragon.champion-detail",
+                    f"{version}:{locale}:{key}", url, version,
+                )
+
+    reference_files = {
+        "riot-static.seasons": "seasons.json",
+        "riot-static.queues": "queues.json",
+        "riot-static.maps": "maps.json",
+        "riot-static.game-modes": "gameModes.json",
+        "riot-static.game-types": "gameTypes.json",
+    }
+    for dataset, filename in reference_files.items():
+        fetch_and_land(
+            "riot-static", dataset, "all", f"{RIOT_STATIC_BASE}/{filename}"
+        )
+
+    conn.execute(
+        "INSERT OR REPLACE INTO meta (key, value) VALUES ('ddragon_version', ?)",
+        (version,),
+    )
+    conn.commit()
+    return {"version": version, "stored": loader.stored, "errors": loader.errors}

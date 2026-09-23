@@ -1,0 +1,115 @@
+dbms	TABLE_CATALOG	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME	ORDINAL_POSITION	DATA_TYPE	CHARACTER_MAXIMUM_LENGTH	CONSTRAINT_TYPE	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME
+sqlserver	silver	dbo	silver_matches	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_matches	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_matches	queue_id	3	int		FOREIGN KEY	dbo	silver_queues	queue_id
+sqlserver	silver	dbo	silver_matches	map_id	4	int		FOREIGN KEY	dbo	silver_maps	map_id
+sqlserver	silver	dbo	silver_matches	platform	5	varchar	64				
+sqlserver	silver	dbo	silver_matches	game_version	6	varchar	64				
+sqlserver	silver	dbo	silver_matches	patch	7	varchar	64				
+sqlserver	silver	dbo	silver_matches	started_at	8	datetime2					
+sqlserver	silver	dbo	silver_matches	duration_seconds	9	int					
+sqlserver	silver	dbo	silver_matches	timeline_status	10	varchar	64				
+sqlserver	silver	dbo	silver_matches	input_hash	11	char	64				
+sqlserver	silver	dbo	silver_matches	transform_run_id	12	bigint		FOREIGN KEY	dbo	silver_transform_runs	transform_run_id
+sqlserver	silver	dbo	silver_match_teams	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_teams	source	1	varchar	16	FOREIGN KEY	dbo	silver_matches	source
+sqlserver	silver	dbo	silver_match_teams	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_teams	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_matches	match_id
+sqlserver	silver	dbo	silver_match_teams	team_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_teams	win	4	bit					
+sqlserver	silver	dbo	silver_match_participants	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_participants	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_teams	source
+sqlserver	silver	dbo	silver_match_participants	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_participants	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_teams	match_id
+sqlserver	silver	dbo	silver_match_participants	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_match_participants	team_id	4	int		FOREIGN KEY	dbo	silver_match_teams	team_id
+sqlserver	silver	dbo	silver_match_participants	puuid	5	varchar	128	FOREIGN KEY	dbo	silver_players	puuid
+sqlserver	silver	dbo	silver_match_participants	champion_id	6	int		FOREIGN KEY	dbo	silver_champions	champion_id
+sqlserver	silver	dbo	silver_match_participants	source_position	7	varchar	64				
+sqlserver	silver	dbo	silver_match_participants	normalized_role	8	varchar	64				
+sqlserver	silver	dbo	silver_match_participants	win	9	bit					
+sqlserver	silver	dbo	silver_match_participants	kills	10	int					
+sqlserver	silver	dbo	silver_match_participants	deaths	11	int					
+sqlserver	silver	dbo	silver_match_participants	assists	12	int					
+sqlserver	silver	dbo	silver_match_participants	gold_earned	13	int					
+sqlserver	silver	dbo	silver_match_participants	lane_cs	14	int					
+sqlserver	silver	dbo	silver_match_participants	neutral_cs	15	int					
+sqlserver	silver	dbo	silver_match_participants	champion_damage	16	int					
+sqlserver	silver	dbo	silver_match_participants	vision_score	17	int					
+sqlserver	silver	dbo	silver_players	puuid	1	varchar	128	PRIMARY KEY			
+sqlserver	silver	dbo	silver_champions	champion_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_items	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_items	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_participants	source
+sqlserver	silver	dbo	silver_participant_items	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_items	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_participants	match_id
+sqlserver	silver	dbo	silver_participant_items	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_items	participant_id	3	int		FOREIGN KEY	dbo	silver_match_participants	participant_id
+sqlserver	silver	dbo	silver_participant_items	slot	4	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_items	item_id	5	int		FOREIGN KEY	dbo	silver_items	item_id
+sqlserver	silver	dbo	silver_participant_spells	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_spells	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_participants	source
+sqlserver	silver	dbo	silver_participant_spells	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_spells	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_participants	match_id
+sqlserver	silver	dbo	silver_participant_spells	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_spells	participant_id	3	int		FOREIGN KEY	dbo	silver_match_participants	participant_id
+sqlserver	silver	dbo	silver_participant_spells	slot	4	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_spells	spell_id	5	int		FOREIGN KEY	dbo	silver_summoner_spells	spell_id
+sqlserver	silver	dbo	silver_participant_rune_styles	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_rune_styles	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_participants	source
+sqlserver	silver	dbo	silver_participant_rune_styles	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_rune_styles	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_participants	match_id
+sqlserver	silver	dbo	silver_participant_rune_styles	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_rune_styles	participant_id	3	int		FOREIGN KEY	dbo	silver_match_participants	participant_id
+sqlserver	silver	dbo	silver_participant_rune_styles	style_slot	4	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_rune_styles	style_id	5	int		FOREIGN KEY	dbo	silver_rune_styles	style_id
+sqlserver	silver	dbo	silver_participant_rune_styles	designation	6	varchar	64				
+sqlserver	silver	dbo	silver_participant_runes	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_runes	source	1	varchar	16	FOREIGN KEY	dbo	silver_participant_rune_styles	source
+sqlserver	silver	dbo	silver_participant_runes	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_runes	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_participant_rune_styles	match_id
+sqlserver	silver	dbo	silver_participant_runes	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_runes	participant_id	3	int		FOREIGN KEY	dbo	silver_participant_rune_styles	participant_id
+sqlserver	silver	dbo	silver_participant_runes	style_slot	4	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_runes	style_slot	4	int		FOREIGN KEY	dbo	silver_participant_rune_styles	style_slot
+sqlserver	silver	dbo	silver_participant_runes	selection_slot	5	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_runes	rune_id	6	int		FOREIGN KEY	dbo	silver_runes	rune_id
+sqlserver	silver	dbo	silver_participant_runes	var1	7	int					
+sqlserver	silver	dbo	silver_participant_runes	var2	8	int					
+sqlserver	silver	dbo	silver_participant_runes	var3	9	int					
+sqlserver	silver	dbo	silver_participant_stat_shards	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_stat_shards	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_participants	source
+sqlserver	silver	dbo	silver_participant_stat_shards	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_stat_shards	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_participants	match_id
+sqlserver	silver	dbo	silver_participant_stat_shards	participant_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_stat_shards	participant_id	3	int		FOREIGN KEY	dbo	silver_match_participants	participant_id
+sqlserver	silver	dbo	silver_participant_stat_shards	shard_slot	4	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_participant_stat_shards	shard_id	5	int		FOREIGN KEY	dbo	silver_stat_shards	shard_id
+sqlserver	silver	dbo	silver_team_bans	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_bans	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_teams	source
+sqlserver	silver	dbo	silver_team_bans	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_bans	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_teams	match_id
+sqlserver	silver	dbo	silver_team_bans	team_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_bans	team_id	3	int		FOREIGN KEY	dbo	silver_match_teams	team_id
+sqlserver	silver	dbo	silver_team_bans	pick_turn	4	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_bans	champion_id	5	int		FOREIGN KEY	dbo	silver_champions	champion_id
+sqlserver	silver	dbo	silver_team_objectives	source	1	varchar	16	PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_objectives	source	1	varchar	16	FOREIGN KEY	dbo	silver_match_teams	source
+sqlserver	silver	dbo	silver_team_objectives	match_id	2	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_objectives	match_id	2	varchar	64	FOREIGN KEY	dbo	silver_match_teams	match_id
+sqlserver	silver	dbo	silver_team_objectives	team_id	3	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_objectives	team_id	3	int		FOREIGN KEY	dbo	silver_match_teams	team_id
+sqlserver	silver	dbo	silver_team_objectives	objective_type	4	varchar	64	PRIMARY KEY			
+sqlserver	silver	dbo	silver_team_objectives	count	5	int					
+sqlserver	silver	dbo	silver_team_objectives	first	6	bit					
+sqlserver	silver	dbo	silver_queues	queue_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_maps	map_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_items	item_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_summoner_spells	spell_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_rune_styles	style_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_runes	rune_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_stat_shards	shard_id	1	int		PRIMARY KEY			
+sqlserver	silver	dbo	silver_transform_runs	transform_run_id	1	bigint		PRIMARY KEY			
+sqlserver	silver	dbo	silver_transform_runs	transform_version	2	varchar	128				
+sqlserver	silver	dbo	silver_transform_runs	started_at	3	datetime2					
+sqlserver	silver	dbo	silver_transform_runs	completed_at	4	datetime2					
+sqlserver	silver	dbo	silver_transform_runs	status	5	varchar	32				

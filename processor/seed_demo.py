@@ -1,8 +1,8 @@
-"""Seed the raw layer with realistic demo matches (no API key required).
+"""Seed the bronze layer with realistic demo matches (no API key required).
 
 Generates synthetic matches in the *exact* Match-V5 response shape (a faithful
-subset of its fields) and stores them in `raw_matches` with source='demo', so
-the whole pipeline — raw layer -> aggregation -> server -> frontend — can be
+subset of its fields) and stores them in `bronze_matches` with source='demo', so
+the whole pipeline — bronze layer -> aggregation -> server -> frontend — can be
 exercised before a RIOT_API_KEY is available. Champions get stable hidden
 strength/popularity values so win/pick/ban rates, matchups and builds look
 plausible rather than uniform.
@@ -277,7 +277,7 @@ def seed(matches: int = 6000, seed_value: int = 20260903) -> int:
         patch = PATCHES[-1] if rng.random() < LATEST_SHARE else rng.choice(PATCHES[:-1])
         match_id, raw = _match(rng, world, seq, patch)
         conn.execute(
-            "INSERT OR REPLACE INTO raw_matches (match_id, json, source, fetched_at) VALUES (?, ?, 'demo', ?)",
+            "INSERT OR REPLACE INTO bronze_matches (match_id, json, source, fetched_at) VALUES (?, ?, 'demo', ?)",
             (match_id, raw, now),
         )
         stored += 1
@@ -292,7 +292,9 @@ def seed(matches: int = 6000, seed_value: int = 20260903) -> int:
 
 def purge_demo() -> int:
     conn = db.open_db()
-    cur = conn.execute("DELETE FROM raw_matches WHERE source = 'demo'")
+    cur = conn.execute("DELETE FROM bronze_matches WHERE source = 'demo'")
+    # Remove legacy copies too, otherwise init_schema would migrate them back.
+    conn.execute("DELETE FROM raw_matches WHERE source = 'demo'")
     conn.commit()
     print(f"purged {cur.rowcount} demo matches (re-run aggregate to refresh stats)")
     conn.close()

@@ -1,0 +1,99 @@
+dbms	TABLE_CATALOG	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME	ORDINAL_POSITION	DATA_TYPE	CHARACTER_MAXIMUM_LENGTH	CONSTRAINT_TYPE	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME
+sqlserver	championgg	dbo	bronze_fetch_runs	run_id	1	int		PRIMARY KEY			
+sqlserver	championgg	dbo	bronze_fetch_runs	pipeline	2	text					
+sqlserver	championgg	dbo	bronze_fetch_runs	parameters	3	text					
+sqlserver	championgg	dbo	bronze_fetch_runs	started_at	4	text					
+sqlserver	championgg	dbo	bronze_fetch_runs	completed_at	5	text					
+sqlserver	championgg	dbo	bronze_fetch_runs	status	6	text					
+sqlserver	championgg	dbo	bronze_fetch_runs	error	7	text					
+sqlserver	championgg	dbo	bronze_payloads	payload_id	1	int		PRIMARY KEY			
+sqlserver	championgg	dbo	bronze_payloads	fetch_run_id	2	int		FOREIGN KEY	dbo	bronze_fetch_runs	run_id
+sqlserver	championgg	dbo	bronze_payloads	source	3	text					
+sqlserver	championgg	dbo	bronze_payloads	dataset	4	text					
+sqlserver	championgg	dbo	bronze_payloads	routing_value	5	text					
+sqlserver	championgg	dbo	bronze_payloads	natural_key	6	text					
+sqlserver	championgg	dbo	bronze_payloads	request_url	7	text					
+sqlserver	championgg	dbo	bronze_payloads	request_params	8	text					
+sqlserver	championgg	dbo	bronze_payloads	response_json	9	text					
+sqlserver	championgg	dbo	bronze_payloads	content_sha256	10	text					
+sqlserver	championgg	dbo	bronze_payloads	fetched_at	11	text					
+sqlserver	championgg	dbo	bronze_fetch_errors	error_id	1	int		PRIMARY KEY			
+sqlserver	championgg	dbo	bronze_fetch_errors	fetch_run_id	2	int		FOREIGN KEY	dbo	bronze_fetch_runs	run_id
+sqlserver	championgg	dbo	bronze_fetch_errors	dataset	3	text					
+sqlserver	championgg	dbo	bronze_fetch_errors	natural_key	4	text					
+sqlserver	championgg	dbo	bronze_fetch_errors	error	5	text					
+sqlserver	championgg	dbo	bronze_fetch_errors	occurred_at	6	text					
+sqlserver	championgg	dbo	bronze_matches	match_id	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	bronze_matches	json	2	text					
+sqlserver	championgg	dbo	bronze_matches	source	3	text					
+sqlserver	championgg	dbo	bronze_matches	fetched_at	4	text					
+sqlserver	championgg	dbo	bronze_match_timelines	match_id	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	bronze_match_timelines	match_id	1	text		FOREIGN KEY	dbo	bronze_matches	match_id
+sqlserver	championgg	dbo	bronze_match_timelines	json	2	text					
+sqlserver	championgg	dbo	bronze_match_timelines	source	3	text					
+sqlserver	championgg	dbo	bronze_match_timelines	fetched_at	4	text					
+sqlserver	championgg	dbo	raw_matches	match_id	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	raw_matches	json	2	text					
+sqlserver	championgg	dbo	raw_matches	source	3	text					
+sqlserver	championgg	dbo	raw_matches	fetched_at	4	text					
+sqlserver	championgg	dbo	champions	champion_id	1	int		PRIMARY KEY			
+sqlserver	championgg	dbo	champions	key	2	text					
+sqlserver	championgg	dbo	champions	name	3	text					
+sqlserver	championgg	dbo	champions	title	4	text					
+sqlserver	championgg	dbo	champions	tags	5	text					
+sqlserver	championgg	dbo	patch_totals	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	patch_totals	matches	2	int					
+sqlserver	championgg	dbo	champion_stats	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	champion_stats	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	champion_stats	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	champion_stats	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	champion_stats	role	3	text		PRIMARY KEY			
+sqlserver	championgg	dbo	champion_stats	games	4	int					
+sqlserver	championgg	dbo	champion_stats	wins	5	int					
+sqlserver	championgg	dbo	champion_stats	kills	6	int					
+sqlserver	championgg	dbo	champion_stats	deaths	7	int					
+sqlserver	championgg	dbo	champion_stats	assists	8	int					
+sqlserver	championgg	dbo	champion_stats	gold	9	int					
+sqlserver	championgg	dbo	champion_stats	damage	10	int					
+sqlserver	championgg	dbo	champion_stats	cs	11	int					
+sqlserver	championgg	dbo	champion_bans	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	champion_bans	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	champion_bans	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	champion_bans	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	champion_bans	bans	3	int					
+sqlserver	championgg	dbo	matchups	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	matchups	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	matchups	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	matchups	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	matchups	role	3	text		PRIMARY KEY			
+sqlserver	championgg	dbo	matchups	opponent_id	4	int		PRIMARY KEY			
+sqlserver	championgg	dbo	matchups	opponent_id	4	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	matchups	games	5	int					
+sqlserver	championgg	dbo	matchups	wins	6	int					
+sqlserver	championgg	dbo	builds	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	builds	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	builds	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	builds	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	builds	role	3	text		PRIMARY KEY			
+sqlserver	championgg	dbo	builds	items	4	text		PRIMARY KEY			
+sqlserver	championgg	dbo	builds	games	5	int					
+sqlserver	championgg	dbo	builds	wins	6	int					
+sqlserver	championgg	dbo	spell_sets	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	spell_sets	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	spell_sets	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	spell_sets	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	spell_sets	role	3	text		PRIMARY KEY			
+sqlserver	championgg	dbo	spell_sets	spells	4	text		PRIMARY KEY			
+sqlserver	championgg	dbo	spell_sets	games	5	int					
+sqlserver	championgg	dbo	spell_sets	wins	6	int					
+sqlserver	championgg	dbo	rune_sets	patch	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	rune_sets	patch	1	text		FOREIGN KEY	dbo	patch_totals	patch
+sqlserver	championgg	dbo	rune_sets	champion_id	2	int		PRIMARY KEY			
+sqlserver	championgg	dbo	rune_sets	champion_id	2	int		FOREIGN KEY	dbo	champions	champion_id
+sqlserver	championgg	dbo	rune_sets	role	3	text		PRIMARY KEY			
+sqlserver	championgg	dbo	rune_sets	keystone	4	int		PRIMARY KEY			
+sqlserver	championgg	dbo	rune_sets	sub_style	5	int		PRIMARY KEY			
+sqlserver	championgg	dbo	rune_sets	games	6	int					
+sqlserver	championgg	dbo	rune_sets	wins	7	int					
+sqlserver	championgg	dbo	meta	key	1	text		PRIMARY KEY			
+sqlserver	championgg	dbo	meta	value	2	text					

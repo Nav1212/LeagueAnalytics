@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import { fetchMeta } from "./api";
-import type { Meta } from "./api";
+import { fetchMeta, fetchRunes } from "./api";
+import type { Meta, Source } from "./api";
 import { ErrorBox, Spinner } from "./components";
-import { loadRuneIcons, setDdragonVersion } from "./ddragon";
+import { applyRuneStyles, setDdragonVersion } from "./ddragon";
 import Champion from "./pages/Champion";
 import Home from "./pages/Home";
 
@@ -11,6 +11,8 @@ interface AppContextValue {
   meta: Meta;
   patch: string;
   setPatch: (p: string) => void;
+  source: Source | null;
+  setSource: (source: Source) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -22,8 +24,8 @@ export function useApp(): AppContextValue {
 }
 
 function Header() {
-  const { meta, patch, setPatch } = useApp();
-  const demoOnly = !meta.rawMatches.riot && !!meta.rawMatches.demo;
+  const { meta, patch, setPatch, source, setSource } = useApp();
+  const demoOnly = source === "demo";
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -33,6 +35,14 @@ function Header() {
           <span className="logo-sub">revitalization</span>
         </Link>
         <div className="header-right">
+          <label className="patch-select">
+            Source
+            <select aria-label="Source" value={source ?? ""} disabled={!meta.sources.length}
+              onChange={(e) => setSource(e.target.value as Source)}>
+              {!meta.sources.length && <option value="">No data</option>}
+              {meta.sources.map((s) => <option key={s} value={s}>{s === "riot" ? "Riot" : "Demo"}</option>)}
+            </select>
+          </label>
           {demoOnly && (
             <span className="demo-chip" title="Synthetic data in exact Riot Match-V5 shape. Run the fetcher with a RIOT_API_KEY for live data.">
               demo data
@@ -40,7 +50,7 @@ function Header() {
           )}
           <label className="patch-select">
             Patch
-            <select value={patch} onChange={(e) => setPatch(e.target.value)}>
+            <select aria-label="Patch" value={patch} disabled={!meta.patches.length} onChange={(e) => setPatch(e.target.value)}>
               {meta.patches.map((p) => (
                 <option key={p.patch} value={p.patch}>
                   {p.patch}
@@ -75,20 +85,28 @@ export default function App() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [patch, setPatch] = useState<string>("");
+  const [requestedSource, setSource] = useState<Source | undefined>();
 
   useEffect(() => {
-    fetchMeta()
-      .then((m) => {
+    const controller = new AbortController();
+    setError(null);
+    setMeta(null);
+    fetchMeta(requestedSource, controller.signal)
+      .then(async (m) => {
+        const runes = await fetchRunes(m.ddragonVersion, controller.signal).catch(() => ({ styles: [] }));
+        if (controller.signal.aborted) return;
         setDdragonVersion(m.ddragonVersion);
-        void loadRuneIcons();
+        try { applyRuneStyles(runes.styles); }
+        catch { applyRuneStyles([]); } // Optional catalog errors must not hide statistics.
         setMeta(m);
-        setPatch((p) => p || m.latestPatch || "");
+        setPatch((p) => m.patches.some((entry) => entry.patch === p) ? p : m.latestPatch || "");
       })
-      .catch((e: Error) => setError(e.message));
-  }, []);
+      .catch((e: Error) => { if (!controller.signal.aborted) setError(e.message); });
+    return () => controller.abort();
+  }, [requestedSource]);
 
   const ctx = useMemo(
-    () => (meta ? { meta, patch, setPatch } : null),
+    () => (meta ? { meta, patch, setPatch, source: meta.source, setSource } : null),
     [meta, patch],
   );
 

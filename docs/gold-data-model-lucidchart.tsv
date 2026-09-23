@@ -1,0 +1,61 @@
+dbms	TABLE_CATALOG	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME	ORDINAL_POSITION	DATA_TYPE	CHARACTER_MAXIMUM_LENGTH	CONSTRAINT_TYPE	TABLE_SCHEMA	TABLE_NAME	COLUMN_NAME
+sqlserver	championgg_gold	dbo	gold_patch_totals	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_patch_totals	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_patch_totals	matches	3	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_stats	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_stats	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_stats	role	4	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_stats	games	5	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	wins	6	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	kills	7	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	deaths	8	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	assists	9	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	gold	10	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	damage	11	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_stats	cs	12	bigint					
+sqlserver	championgg_gold	dbo	gold_champion_bans	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_bans	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_bans	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champion_bans	bans	4	bigint					
+sqlserver	championgg_gold	dbo	gold_matchups	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_matchups	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_matchups	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_matchups	role	4	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_matchups	opponent_id	5	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_matchups	games	6	bigint					
+sqlserver	championgg_gold	dbo	gold_matchups	wins	7	bigint					
+sqlserver	championgg_gold	dbo	gold_builds	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_builds	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_builds	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_builds	role	4	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_builds	items	5	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_builds	games	6	bigint					
+sqlserver	championgg_gold	dbo	gold_builds	wins	7	bigint					
+sqlserver	championgg_gold	dbo	gold_spell_sets	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_spell_sets	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_spell_sets	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_spell_sets	role	4	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_spell_sets	spells	5	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_spell_sets	games	6	bigint					
+sqlserver	championgg_gold	dbo	gold_spell_sets	wins	7	bigint					
+sqlserver	championgg_gold	dbo	gold_rune_sets	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	patch	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	champion_id	3	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	role	4	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	keystone	5	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	sub_style	6	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_sets	games	7	bigint					
+sqlserver	championgg_gold	dbo	gold_rune_sets	wins	8	bigint					
+sqlserver	championgg_gold	dbo	gold_champions	champion_id	1	bigint		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_champions	key	2	text					
+sqlserver	championgg_gold	dbo	gold_champions	name	3	text					
+sqlserver	championgg_gold	dbo	gold_champions	title	4	text					
+sqlserver	championgg_gold	dbo	gold_champions	tags	5	text					
+sqlserver	championgg_gold	dbo	gold_source_counts	source	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_source_counts	raw_matches	2	bigint					
+sqlserver	championgg_gold	dbo	gold_rune_catalog	version	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_catalog	locale	2	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_rune_catalog	styles	3	text					
+sqlserver	championgg_gold	dbo	gold_meta	key	1	text		PRIMARY KEY			
+sqlserver	championgg_gold	dbo	gold_meta	value	2	text					

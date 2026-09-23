@@ -1,0 +1,116 @@
+%% Proposed logical Silver core, NOT the existing physical database.
+%% All match descendants carry source + match_id in their compound keys.
+%% Reference/static history and timeline details are in silver-layer-plan.md.
+erDiagram
+    matches ||--o{ match_teams : contains
+    match_teams ||--o{ match_participants : fields
+    players |o--o{ match_participants : identifies
+    champions ||--o{ match_participants : played_as
+    match_teams ||--o{ team_bans : records
+    match_teams ||--o{ team_objectives : records
+    match_participants ||--o{ participant_items : finishes_with
+    match_participants ||--o{ participant_spells : selects
+    match_participants ||--o{ participant_rune_styles : selects
+    participant_rune_styles ||--o{ participant_runes : contains
+    match_participants ||--o{ participant_stat_shards : selects
+
+    matches {
+        TEXT source PK
+        TEXT match_id PK
+        INTEGER queue_id
+        INTEGER map_id
+        TEXT platform
+        TEXT game_version
+        TEXT patch
+        TIMESTAMP started_at
+        INTEGER duration_seconds
+        TEXT timeline_status
+        TEXT input_hash
+        INTEGER transform_run_id FK
+    }
+    match_teams {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER team_id PK
+        BOOLEAN win
+    }
+    match_participants {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK
+        INTEGER team_id FK
+        TEXT puuid FK "Nullable"
+        INTEGER champion_id FK
+        TEXT source_position
+        TEXT normalized_role "Nullable"
+        BOOLEAN win
+        INTEGER kills
+        INTEGER deaths
+        INTEGER assists
+        INTEGER gold_earned
+        INTEGER lane_cs
+        INTEGER neutral_cs
+        INTEGER champion_damage
+        INTEGER vision_score
+    }
+    players {
+        TEXT puuid PK
+    }
+    champions {
+        INTEGER champion_id PK
+    }
+    participant_items {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK, FK
+        INTEGER slot PK
+        INTEGER item_id FK "Nullable empty slot; reference table on static page"
+    }
+    participant_spells {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK, FK
+        INTEGER slot PK
+        INTEGER spell_id FK "Reference table on static page"
+    }
+    participant_rune_styles {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK, FK
+        INTEGER style_slot PK
+        INTEGER style_id FK
+        TEXT designation
+    }
+    participant_runes {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK, FK
+        INTEGER style_slot PK, FK
+        INTEGER selection_slot PK
+        INTEGER rune_id FK
+        INTEGER var1
+        INTEGER var2
+        INTEGER var3
+    }
+    participant_stat_shards {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER participant_id PK, FK
+        TEXT shard_slot PK
+        INTEGER shard_id FK
+    }
+    team_bans {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER team_id PK, FK
+        INTEGER pick_turn PK
+        INTEGER champion_id FK "Nullable empty ban"
+    }
+    team_objectives {
+        TEXT source PK, FK
+        TEXT match_id PK, FK
+        INTEGER team_id PK, FK
+        TEXT objective_type PK
+        INTEGER count
+        BOOLEAN first
+    }
